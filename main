@@ -1,0 +1,41 @@
+import os, random, struct, sys
+from Crypto.Cipher import AES
+
+import hashlib
+import binascii
+
+def encrypt_file(key, in_filename, chunksize=64*1024):
+    out_filename = in_filename + '.enc'
+
+#   iv =  os.urandom(16).decode("utf-8")
+#    key = '0123456789abcdef'
+    iv = 16 * '\x00' 
+    print(iv," and it's len is :",len(iv)," and its type is: ",type(iv))
+    encryptor = AES.new(key, AES.MODE_CBC, iv)
+    filesize = os.path.getsize(in_filename)
+
+    with open(in_filename, 'rb') as infile:
+        with open(out_filename, 'wb') as outfile:
+            outfile.write(struct.pack('<Q', filesize))
+            outfile.write(iv.encode())
+
+            while True:
+                chunk = infile.read(chunksize)
+                if len(chunk) == 0:
+                    break
+                elif len(chunk) % 16 != 0:
+                       chunk = chunk.decode("utf-8","ignore")
+                       chunk += ' ' * (16 - len(chunk) % 16)
+
+                outfile.write(encryptor.encrypt(chunk))
+
+
+print("prova aes")
+
+file_in = sys.argv[1]
+print("nome del file : ",file_in)
+
+password = 'kitty'
+#key = hashlib.sha256(str(random.getrandbits(16)).encode('utf-8')).hexdigest()
+key = '0123456789abcdef'
+encrypt_file(key,file_in,16)
